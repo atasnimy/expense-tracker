@@ -1,28 +1,45 @@
 import streamlit as st
+import pandas as pd
 from datetime import date
+import os
+
+# Constants
+CSV_FILE = "expenses.csv"
 
 # ------------------------
-# Expense Management Logic
+# Helper Functions
 # ------------------------
 
-def add_expense(amount, category, date):
-    if 'expenses' not in st.session_state:
-        st.session_state.expenses = []
-    st.session_state.expenses.append({
+def load_expenses():
+    if os.path.exists(CSV_FILE):
+        return pd.read_csv(CSV_FILE)
+    return pd.DataFrame(columns=["amount", "category", "date"])
+
+def save_expense_to_csv(amount, category, date):
+    new_entry = pd.DataFrame([{
         "amount": amount,
         "category": category.strip(),
         "date": date
-    })
+    }])
+    new_entry.to_csv(CSV_FILE, mode='a', header=not os.path.exists(CSV_FILE), index=False)
 
-def print_expenses(expenses):
-    for idx, expense in enumerate(expenses, start=1):
-        st.write(f"{idx}. 💰 Amount: ${expense['amount']:.2f} | 🏷️ Category: {expense['category']} | 📅 Date: {expense['date']}")
+def add_expense(amount, category, date):
+    st.session_state.expenses = st.session_state.expenses.append({
+        "amount": amount,
+        "category": category.strip(),
+        "date": str(date)
+    }, ignore_index=True)
+    save_expense_to_csv(amount, category, date)
 
-def total_expenses(expenses):
-    return sum(expense['amount'] for expense in expenses)
+def print_expenses(df):
+    for idx, row in df.iterrows():
+        st.write(f"{idx+1}. 💰 Amount: ${row['amount']:.2f} | 🏷️ Category: {row['category']} | 📅 Date: {row['date']}")
 
-def filter_expenses_by_category(expenses, category):
-    return [expense for expense in expenses if expense['category'].lower() == category.lower()]
+def total_expenses(df):
+    return df['amount'].astype(float).sum()
+
+def filter_expenses_by_category(df, category):
+    return df[df['category'].str.lower() == category.lower()]
 
 # ------------------------
 # Streamlit UI
@@ -30,9 +47,9 @@ def filter_expenses_by_category(expenses, category):
 
 st.title("🧾 Spending Log")
 
-# Ensure session state is initialized
+# Initialize state
 if 'expenses' not in st.session_state:
-    st.session_state.expenses = []
+    st.session_state.expenses = load_expenses()
 
 # Expense input form
 with st.form("expense_form", clear_on_submit=True):
@@ -57,8 +74,8 @@ total = total_expenses(st.session_state.expenses)
 st.write(f"**Total Spent:** 💸 ${total:.2f}")
 
 # Filter by category
-if st.session_state.expenses:
-    unique_categories = sorted(set(exp["category"] for exp in st.session_state.expenses))
+if not st.session_state.expenses.empty:
+    unique_categories = sorted(st.session_state.expenses['category'].unique())
     selected_category = st.selectbox("🔍 Filter by Category", options=["-- All --"] + unique_categories)
 
     if selected_category != "-- All --":
