@@ -54,7 +54,7 @@ if budget > 0:
     else:
         st.error(f"You exceeded the budget by ${abs(remaining)}")
 else:
-        st.info("No budget entered yet.")
+    st.info("No budget entered yet.")
 
 # Filter by category
 st.subheader("Filter by Category")
