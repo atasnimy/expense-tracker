@@ -53,7 +53,7 @@ if budget > 0:
         st.success(f"You are within budget. Remaining: ${remaining}")
     else:
         st.error(f"You exceeded the budget by ${abs(remaining)}")
-    else:
+else:
         st.info("No budget entered yet.")
 
 # Filter by category
