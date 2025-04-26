@@ -47,14 +47,14 @@ st.write(f"${total_expenses(st.session_state.expenses)}")
 
 # Show budget
 st.subheader("Budget Overview")
-    if budget > 0:
-        remaining = budget - total
-        if remaining >= 0:
-            st.success(f"You are within budget. Remaining: ${remaining}")
-        else:
-            st.error(f"You exceeded the budget by ${abs(remaining)}")
-        else:
-            st.info("No budget entered yet.")
+if budget > 0:
+    remaining = budget - total
+    if remaining >= 0:
+        st.success(f"You are within budget. Remaining: ${remaining}")
+    else:
+        st.error(f"You exceeded the budget by ${abs(remaining)}")
+    else:
+        st.info("No budget entered yet.")
 
 # Filter by category
 st.subheader("Filter by Category")
